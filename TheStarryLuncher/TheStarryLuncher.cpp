@@ -5,6 +5,7 @@ TheStarryLuncher::TheStarryLuncher(QWidget *parent)
 {
     ui.setupUi(this);
     setFixedSize(this->width(), this->height());//固定窗体大小
+
 }
 
 TheStarryLuncher::~TheStarryLuncher()
