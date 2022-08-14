@@ -22,6 +22,9 @@
    <iconset resource="TheStarryLuncher.qrc">
     <normaloff>:/C:/Users/16479/Pictures/launcherIcon.ico</normaloff>:/C:/Users/16479/Pictures/launcherIcon.ico</iconset>
   </property>
+  <property name="toolTipDuration">
+   <number>0</number>
+  </property>
   <property name="styleSheet">
    <string notr="true"/>
   </property>
@@ -29,9 +32,9 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>0</y>
+     <y>40</y>
      <width>1331</width>
-     <height>661</height>
+     <height>621</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -67,9 +70,19 @@
       </rect>
      </property>
     </widget>
+    <widget class="QComboBox" name="comboBox">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>60</y>
+       <width>161</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="downLoadPage">
-    <widget class="QComboBox" name="gameList">
+    <widget class="QComboBox" name="gameVerList">
      <property name="geometry">
       <rect>
        <x>30</x>
@@ -77,6 +90,64 @@
        <width>251</width>
        <height>22</height>
       </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="game_download">
+     <property name="geometry">
+      <rect>
+       <x>824</x>
+       <y>532</y>
+       <width>161</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>下载</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="earlyVer">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>40</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>早期版本</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="testVer">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>40</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>测试版本</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="releaseVer">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>40</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>正式版本</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
@@ -111,6 +182,23 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="close">
+   <property name="geometry">
+    <rect>
+     <x>1336</x>
+     <y>-1</y>
+     <width>38</width>
+     <height>38</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="TheStarryLuncher.qrc">
+     <normaloff>:/C:/Users/16479/Desktop/文档/src/close.ico</normaloff>:/C:/Users/16479/Desktop/文档/src/close.ico</iconset>
    </property>
   </widget>
  </widget>
