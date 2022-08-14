@@ -47,6 +47,16 @@
     </rect>
    </property>
   </widget>
+  <widget class="QComboBox" name="gameList">
+   <property name="geometry">
+    <rect>
+     <x>720</x>
+     <y>70</y>
+     <width>231</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
