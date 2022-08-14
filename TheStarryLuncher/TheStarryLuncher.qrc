@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="TheStarryLuncher">
+    <qresource prefix="/">
+        <file>C:/Users/16479/Pictures/launcherIcon.ico</file>
     </qresource>
 </RCC>

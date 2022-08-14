@@ -7,24 +7,30 @@
 #include <fstream>
 #include <hv/http_client.h>
 #include <json/json.h>
+#include <thread>
+#include<QMetaType>
 #include "TsException.h"
 #include "ui_TheStarryLuncher.h"
 
+
 using namespace std;
 const string GET_GAME_LIST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-//class TsException:public exception
 
 class TheStarryLuncher : public QWidget
 {
     Q_OBJECT
-
+signals:
+    void downloadedGameList();//下载游戏版本完成的信号
 public:
     TheStarryLuncher(QWidget *parent = nullptr);
     vector<string> getJavaPaths();//TODO 获取java的路径列表
-    void getGameList(vector<Json::Value> &gameList);//TODO 获取游戏列表
+    void getGameList();//TODO 获取游戏列表
     ~TheStarryLuncher();
 
 private:
     Ui::TheStarryLuncherClass ui;
     bool isFileExist(string path);//TODO 判断是否为Java的路径
+    vector<Json::Value>gameList;//游戏列表
+    void initWidget();//初始化界面
+    void initSignal();//初始化信号的连接
 };

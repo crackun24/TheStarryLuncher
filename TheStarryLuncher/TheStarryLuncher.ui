@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1044</width>
-    <height>559</height>
+    <width>1373</width>
+    <height>659</height>
    </rect>
   </property>
   <property name="font">
@@ -18,43 +18,99 @@
   <property name="windowTitle">
    <string>TheStarryLuncher</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <property name="windowIcon">
+   <iconset resource="TheStarryLuncher.qrc">
+    <normaloff>:/C:/Users/16479/Pictures/launcherIcon.ico</normaloff>:/C:/Users/16479/Pictures/launcherIcon.ico</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <widget class="QStackedWidget" name="PageSwitch">
    <property name="geometry">
     <rect>
-     <x>894</x>
-     <y>502</y>
-     <width>121</width>
-     <height>41</height>
+     <x>50</x>
+     <y>0</y>
+     <width>1331</width>
+     <height>661</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <family>Arial</family>
-     <pointsize>11</pointsize>
-    </font>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <widget class="QWidget" name="mainPage">
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>1200</x>
+       <y>610</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>启动 Minecraft</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="test">
+     <property name="geometry">
+      <rect>
+       <x>340</x>
+       <y>20</y>
+       <width>701</width>
+       <height>381</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="downLoadPage">
+    <widget class="QComboBox" name="gameList">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>30</y>
+       <width>251</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="page_main">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>40</y>
+     <width>50</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-image: url(./src/main.png);</string>
    </property>
    <property name="text">
-    <string>启动 Minecraft</string>
+    <string/>
    </property>
   </widget>
-  <widget class="QTextBrowser" name="test">
+  <widget class="QPushButton" name="page_download">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>70</y>
-     <width>701</width>
-     <height>381</height>
+     <x>0</x>
+     <y>90</y>
+     <width>50</width>
+     <height>50</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QComboBox" name="gameList">
-   <property name="geometry">
-    <rect>
-     <x>720</x>
-     <y>70</y>
-     <width>231</width>
-     <height>21</height>
-    </rect>
+   <property name="styleSheet">
+    <string notr="true">background-image: url(./src/download.png);</string>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

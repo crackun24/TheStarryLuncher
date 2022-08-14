@@ -4,17 +4,9 @@
 TheStarryLuncher::TheStarryLuncher(QWidget *parent)
     : QWidget(parent)
 {
-    ui.setupUi(this);
-    setFixedSize(this->width(), this->height());//固定窗体大小
-    setWindowFlag(Qt::FramelessWindowHint);//设置无边框窗口
+    initWidget();//初始化页面
+    initSignal();//初始化信号和槽的连接
 
-    vector<Json::Value>gameList;
-    getGameList(gameList);
-    
-    for(int i = 0;i < gameList.size();i++)
-    {
-        ui.gameList->addItem(gameList.at(i)["id"].as<string>().c_str());
-    }
 
 }
 
@@ -40,23 +32,28 @@ vector<string> TheStarryLuncher::getJavaPaths()
     return javaPaths;
 }
 
-void TheStarryLuncher::getGameList(vector<Json::Value>& gameList) 
+void TheStarryLuncher::getGameList() 
 {
-    HttpRequest req; HttpResponse rep;//http请求的对象
-    req.url = GET_GAME_LIST_URL;
-    http_client_send(&req, &rep);//发送http请求
-    if(rep.status_code != 200)//判断请求是否成功
+    std::thread downloadThread([&]()
     {
-        TsException* excep = new TsException("Could not download Version File!");
-        throw excep;//抛出异常
-    }
+            HttpRequest req; HttpResponse rep;//http请求的对象
+            req.url = GET_GAME_LIST_URL;
+            http_client_send(&req, &rep);//发送http请求
+            if (rep.status_code != 200)//判断请求是否成功
+            {
+                TsException* excep = new TsException("Could not download Version File!");
+                throw excep;//抛出异常
+            }
 
-    Json::Reader reader; Json::Value root;
-    reader.parse(rep.body, root);//解析json文件
-    for(int i = 0;i < root["versions"].size();i++)//遍历游戏版本的数组列表
-    {
-        gameList.push_back(root["versions"][i]);//将游戏版本的Json对象放入vector中
-    }
+            Json::Reader reader; Json::Value root;
+            reader.parse(rep.body, root);//解析json文件
+            for (int i = 0; i < root["versions"].size(); i++)//遍历游戏版本的数组列表
+            {
+                gameList.push_back(root["versions"][i]);//将游戏版本的Json对象放入vector中
+            }
+            emit downloadedGameList();//发送游戏列表下载完成的信号
+    });//下载线程
+    downloadThread.detach();//分离线程
 }
 
 TheStarryLuncher::~TheStarryLuncher()
@@ -73,4 +70,32 @@ bool TheStarryLuncher::isFileExist(string path)
     }
     fs.close();
     return false;
+}
+
+void TheStarryLuncher::initWidget()
+{
+    ui.setupUi(this);
+    setFixedSize(this->width(), this->height());//固定窗体大小
+    setWindowFlag(Qt::FramelessWindowHint);//设置无边框窗口
+    ui.PageSwitch->setCurrentIndex(0);
+}
+
+void TheStarryLuncher::initSignal()
+{
+    connect(this, &TheStarryLuncher::downloadedGameList, [=]()
+        {
+            for (int i = 0; i < gameList.size(); i++)
+            {
+                ui.gameList->addItem(gameList.at(i)["id"].as<string>().c_str());
+            }
+        });//下载游戏列表完成执行的lambda函数
+    connect(ui.page_main, &QPushButton::clicked, [=]()
+    {
+            ui.PageSwitch->setCurrentIndex(0);//设置页面切换为主页
+    });
+    connect(ui.page_download, &QPushButton::clicked, [=]()
+        {
+            ui.PageSwitch->setCurrentIndex(1);//设置页面切换为下载页面
+            getGameList();
+        });
 }

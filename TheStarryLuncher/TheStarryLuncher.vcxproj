@@ -102,7 +102,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="TsException.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TheStarryLuncher.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="C:\Users\16479\Desktop\文档\luncherIcon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
