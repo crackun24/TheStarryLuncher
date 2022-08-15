@@ -1,4 +1,5 @@
 #include "TheStarryLuncher.h"
+#include "TheStarryLuncher.h"
 
 
 TheStarryLuncher::TheStarryLuncher(QWidget *parent)
@@ -8,13 +9,20 @@ TheStarryLuncher::TheStarryLuncher(QWidget *parent)
     initDefaultOpinion();//初始化默认选项
     initSignal();//初始化信号和槽的连接
 
+    getJavaPaths();//获取Java列表
+    upDateJavaPathsList();//更新ui下拉框中的java列表
 
+    getLocalGameList();
+    for(int i = 0;i < gameLocalList.size();i++)
+    {
+        ui.localGameList->addItem(gameLocalList.at(i)->id.c_str());
+    }
 }
 
-vector<string> TheStarryLuncher::getJavaPaths()
+void TheStarryLuncher::getJavaPaths()
 {
-    vector<string> javaPaths;
     string paths = getenv("PATH");//获取系统变量字符串
+    javaPathsList.clear();//清空数组
     while (true)
     {
         auto pos = paths.find(';');//系统变量使用分号进行分割,查找分号的位置
@@ -22,7 +30,7 @@ vector<string> TheStarryLuncher::getJavaPaths()
         {
             string path = paths.substr(0, pos) + "\\java.exe";//获取路径字符串
             if(isFileExist(path))
-				javaPaths.push_back(path);
+                javaPathsList.push_back(path);
             paths.erase(paths.begin(), paths.begin() + pos + 1);//删除已经查找过的字符串
 
         }else
@@ -30,31 +38,37 @@ vector<string> TheStarryLuncher::getJavaPaths()
             break;
         }
     }
-    return javaPaths;
 }
 
 void TheStarryLuncher::getGameList() 
 {
-    std::thread downloadThread([&]()
+    try
     {
-            HttpRequest req; HttpResponse rep;//http请求的对象
-            req.url = GET_GAME_LIST_URL;
-            http_client_send(&req, &rep);//发送http请求
-            if (rep.status_code != 200)//判断请求是否成功
+        ui.downloadVerStateLabel->setText(GbkToUtf8("正在获取版本信息...").c_str());
+        std::thread downloadThread([&]()
             {
-                TsException* excep = new TsException("Could not download Version File!");
-                throw excep;//抛出异常
-            }
+                HttpRequest req; HttpResponse rep;//http请求的对象
+                req.url = GET_GAME_LIST_URL;
+                http_client_send(&req, &rep);//发送http请求
+                if (rep.status_code != 200 || rep.body == "")//判断请求是否成功
+                {
+                    emit onDownloadGameListFailed();//发送下载游戏版本列表失败的信号
+                    return;
+                }
 
-            Json::Reader reader; Json::Value root;
-            reader.parse(rep.body, root);//解析json文件
-            for (int i = 0; i < root["versions"].size(); i++)//遍历游戏版本的数组列表
-            {
-                gameVerList.push_back(root["versions"][i]);//将游戏版本的Json对象放入vector中
-            }
-            emit downloadedGameList();//发送游戏列表下载完成的信号
-    });//下载线程
-    downloadThread.detach();//分离线程
+                Json::Reader reader; Json::Value root;
+                reader.parse(rep.body, root);//解析json文件
+                for (int i = 0; i < root["versions"].size(); i++)//遍历游戏版本的数组列表
+                {
+                    gameVerList.push_back(root["versions"][i]);//将游戏版本的Json对象放入vector中
+                }
+                emit onDownloadedGameList();//发送游戏列表下载完成的信号
+            });//下载线程
+        downloadThread.detach();//分离线程
+	    
+    }catch(const exception &e)
+    {
+    }
 }
 
 TheStarryLuncher::~TheStarryLuncher()
@@ -79,6 +93,12 @@ void TheStarryLuncher::initWidget()
     setFixedSize(this->width(), this->height());//固定窗体大小
     setWindowFlag(Qt::FramelessWindowHint);//设置无边框窗口
     ui.PageSwitch->setCurrentIndex(0);
+    ui.downloadVerRetry->setVisible(false);//设置重新下载的label不可见
+    ui.downloadVerRetry->installEventFilter(this);//给重新下载的label安装过滤器
+    ui.window_bar->installEventFilter(this);//窗口标题栏安装事件过滤器
+    ui.close->raise();//防止关闭按钮被挡住
+    ui.miniSize->raise();//防止最小化按钮被挡住
+    createGameFloderIfNExist(); 
 }
 
 void TheStarryLuncher::initSignal()
@@ -96,19 +116,24 @@ void TheStarryLuncher::initSignal()
       }
 
     });//点击下载按钮执行的槽函数
-    connect(this, &TheStarryLuncher::downloadedGameList, [=]()
+    connect(this, &TheStarryLuncher::onDownloadedGameList, [=]()
     {
             upDateGameListInUi();//更新游戏列表
+            ui.downloadVerStateLabel->clear();
+            ui.downloadVerRetry->setVisible(false);//设置重试的label不可见
     });//下载游戏列表完成执行的lambda函数
     connect(ui.page_main, &QPushButton::clicked, [=]()
     {
             ui.PageSwitch->setCurrentIndex(0);//设置页面切换为主页
+            getJavaPaths();//获取Java列表
+            upDateJavaPathsList();// 更新ui下拉框中的java列表
     });
     connect(ui.page_download, &QPushButton::clicked, [=]()
         {
             ui.PageSwitch->setCurrentIndex(1);//设置页面切换为下载页面
+            ui.gameVerList->clear();//清空版本列表
+            gameVerList.clear();
             getGameList();//获取游戏列表
-            upDateGameListInUi();//更新下拉框中的游戏列表
      });
     connect(ui.earlyVer, &QCheckBox::stateChanged, [=]()
     {
@@ -126,13 +151,22 @@ void TheStarryLuncher::initSignal()
         });//正式版本复选框状态改变则更新下拉框的游戏列表
     connect(ui.close, &QPushButton::clicked, [=]()
     {
-            close();//关闭窗口
+    	close();//关闭窗口
     });//关闭按钮执行的槽函数
+    connect(this, &TheStarryLuncher::onDownloadGameListFailed, [=]()
+    {
+    	ui.downloadVerStateLabel->setText(GbkToUtf8("获取游戏版本列表失败,请检查网络是否畅通").c_str());
+        ui.downloadVerRetry->setVisible(true);//设置重试的label可见
+    });//游戏列表获取失败执行的槽函数
+    connect(ui.miniSize, &QPushButton::clicked, [=]()
+    {
+            showMinimized();//窗口最小化
+    });
 }
 
 void TheStarryLuncher::initDefaultOpinion()
 {
-
+    leftClickedTomove = false;//左键默认为没有按下的状态
 }
 
 string TheStarryLuncher::GbkToUtf8(const char* src_str)
@@ -181,3 +215,110 @@ void TheStarryLuncher::upDateGameListInUi()
 
     }
 }
+
+void TheStarryLuncher::upDateJavaPathsList()
+{
+    ui.javaPathsList->clear();
+    for (int i = 0; i < javaPathsList.size(); i++)
+    {
+        ui.javaPathsList->addItem(javaPathsList.at(i).c_str());
+    }
+}
+
+void TheStarryLuncher::upDateLocalGameListInui()
+{
+    for (int i = 0; i < gameLocalList.size(); i++)
+        ui.localGameList->addItem(gameLocalList.at(i)->id.c_str());
+}
+
+bool TheStarryLuncher::eventFilter(QObject* watched, QEvent* event)
+{
+	if(watched == ui.downloadVerRetry)
+	{
+		if(event->type() == QEvent::MouseButtonPress)//鼠标点击事件
+		{
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if(mouseEvent->button() == Qt::LeftButton)
+            {
+                getGameList();//重新下载游戏列表
+                return true;
+            }
+            return false;
+		}if(event->type() == QEvent::MouseMove)
+		{
+            setCursor(Qt::PointingHandCursor);//设置鼠标指针
+		}
+	}else if(watched == ui.window_bar)
+	{
+        if(event->type() == QEvent::MouseMove && leftClickedTomove)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            this->move(mouseEvent->pos() - positionPrevoious + pos());
+        }
+		if(event->type()==QEvent::MouseButtonPress )//判断为鼠标按下和移动
+		{
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton)
+            {
+                leftClickedTomove = true;
+                positionPrevoious = mouseEvent->pos();//记录移动窗口前的鼠标坐标
+            }
+		}
+        if(event->type() == QEvent::MouseButtonRelease)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton)
+                leftClickedTomove = false;
+        }
+	}
+    return false;
+}
+
+bool TheStarryLuncher::createGameFloderIfNExist()
+{
+    if(_access("./.minecraft",NULL) == -1)
+    {
+        _mkdir("./.minecraft");
+        return false;
+    }
+    return true;
+}
+
+void TheStarryLuncher::getLocalGameList()
+{
+    if (!createGameFloderIfNExist())
+    {
+        return;//游戏的目录不存在直接结束函数，无需再查找version文件夹
+    }
+    for (int i = 0; i < gameLocalList.size(); i++)
+    {
+        delete gameLocalList.at(i);//删除对象，释放资源
+    }
+    gameLocalList.clear();//清空vector
+
+
+    long handle;//version文件夹下的文件句柄
+    struct _finddata_t fileinfo;
+    //第一次查找
+    handle = _findfirst(VERSION_PATH.c_str(), &fileinfo);
+    if (handle == -1)//文件夹为空
+        return;
+
+    do
+    {
+        if(fileinfo.attrib == _A_SUBDIR && 
+            strcmp(fileinfo.name,".") != 0 &&
+            strcmp(fileinfo.name, "..") != 0)//判断是否为文件夹
+        {
+            long subHandle;//versions文件夹下的子目录的文件句柄
+            ui.localGameList->addItem(fileinfo.name);
+
+        }
+
+
+    } while (!_findnext(handle, &fileinfo));
+
+    _findclose(handle);
+}
+
+

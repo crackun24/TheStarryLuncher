@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>C:/Users/16479/Pictures/launcherIcon.ico</file>
         <file>C:/Users/16479/Desktop/文档/src/close.ico</file>
+        <file>C:/Users/16479/Desktop/文档/src/miniSize.ico</file>
     </qresource>
 </RCC>

@@ -63,6 +63,7 @@
     <Link>
       <AdditionalLibraryDirectories>E:\env\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glog.lib;hv.lib;hv_static.lib;jsoncpp.lib;jsoncpp_static.lib;libconfig++.lib;libconfig.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Win32'" Label="Configuration">
@@ -92,6 +93,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LocalGameObj.cpp" />
     <ClCompile Include="TsException.cpp" />
     <QtRcc Include="TheStarryLuncher.qrc" />
     <QtUic Include="TheStarryLuncher.ui" />
@@ -102,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h" />
+    <ClInclude Include="LocalGameObj.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TsException.h" />
   </ItemGroup>
