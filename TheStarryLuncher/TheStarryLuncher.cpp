@@ -300,7 +300,7 @@ void TheStarryLuncher::getLocalGameList()
     long handle;//version文件夹下的文件句柄
     struct _finddata_t fileinfo;
     //第一次查找
-    handle = _findfirst(VERSION_PATH.c_str(), &fileinfo);
+    handle = _findfirst((VERSION_PATH + "*").c_str(), &fileinfo);
     if (handle == -1)//文件夹为空
         return;
 
@@ -311,12 +311,28 @@ void TheStarryLuncher::getLocalGameList()
             strcmp(fileinfo.name, "..") != 0)//判断是否为文件夹
         {
             long subHandle;//versions文件夹下的子目录的文件句柄
-            ui.localGameList->addItem(fileinfo.name);
+            struct _finddata_t subFileInfo;//子目录的文件的信息
+            string subFilePath = VERSION_PATH + fileinfo.name + "\\*" ;
+            subHandle = _findfirst(subFilePath.c_str(),&subFileInfo);
+            do
+            {
+	            if(subFileInfo.attrib != _A_SUBDIR )//判断文件不是目录
+	            {
+                    string subFileName = subFileInfo.name;
+                    if(subFileName.substr(subFileName.size() - 4) == ".jar")//判断是否为jar文件
+                    {
+                        LocalGameObj* gameObj = new LocalGameObj(subFileName,VERSION_PATH + fileinfo.name + "\\"+ subFileName);
+                        ui.localGameList->addItem(subFileName.c_str());
+                        ui.test->append(gameObj->path.c_str());
+                    }
+	            }
+
+            } while (!_findnext(subHandle,&subFileInfo));//遍历子目录的所有文件
 
         }
 
 
-    } while (!_findnext(handle, &fileinfo));
+    } while (!_findnext(handle, &fileinfo));//遍历versions目录下得所有文件
 
     _findclose(handle);
 }

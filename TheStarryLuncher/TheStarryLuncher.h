@@ -19,7 +19,7 @@
 
 using namespace std;
 const string GET_GAME_LIST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-const string VERSION_PATH = ".\\.minecraft\\versions\\*";
+const string VERSION_PATH = ".\\.minecraft\\versions\\";
 class TheStarryLuncher : public QWidget
 {
     Q_OBJECT
