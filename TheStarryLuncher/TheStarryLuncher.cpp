@@ -13,10 +13,7 @@ TheStarryLuncher::TheStarryLuncher(QWidget *parent)
     upDateJavaPathsList();//更新ui下拉框中的java列表
 
     getLocalGameList();
-    for(int i = 0;i < gameLocalList.size();i++)
-    {
-        ui.localGameList->addItem(gameLocalList.at(i)->id.c_str());
-    }
+    upDateLocalGameListInui();
 }
 
 void TheStarryLuncher::getJavaPaths()
@@ -201,7 +198,7 @@ string TheStarryLuncher::Utf8ToGbk(const char* src_str)
     return strTemp;
 }
 
-void TheStarryLuncher::upDateGameListInUi()
+void TheStarryLuncher::upDateGameListInUi()//更新ui中的游戏下载列表
 {
     ui.gameVerList->clear();//清空下拉框中的游戏列表的选项
     for(int i = 0;i < gameVerList.size();i++)
@@ -216,7 +213,7 @@ void TheStarryLuncher::upDateGameListInUi()
     }
 }
 
-void TheStarryLuncher::upDateJavaPathsList()
+void TheStarryLuncher::upDateJavaPathsList()//更新页面中的java列表 
 {
     ui.javaPathsList->clear();
     for (int i = 0; i < javaPathsList.size(); i++)
@@ -225,10 +222,13 @@ void TheStarryLuncher::upDateJavaPathsList()
     }
 }
 
-void TheStarryLuncher::upDateLocalGameListInui()
+void TheStarryLuncher::upDateLocalGameListInui()//更新页面中的本地游戏版本列表
 {
-    for (int i = 0; i < gameLocalList.size(); i++)
-        ui.localGameList->addItem(gameLocalList.at(i)->id.c_str());
+    for(int i = 0;i < gameLocalList.size();i++)
+    {
+        ui.localGameList->addItem((gameLocalList.at(i)->fileName
+            + "(" + gameLocalList.at(i)->id + ")").c_str());
+    }
 }
 
 bool TheStarryLuncher::eventFilter(QObject* watched, QEvent* event)
@@ -312,8 +312,8 @@ void TheStarryLuncher::getLocalGameList()
         {
             long subHandle;//versions文件夹下的子目录的文件句柄
             struct _finddata_t subFileInfo;//子目录的文件的信息
-            string subFilePath = VERSION_PATH + fileinfo.name + "\\*" ;
-            subHandle = _findfirst(subFilePath.c_str(),&subFileInfo);
+            string subFilePath = VERSION_PATH + fileinfo.name + "\\*" ;//子文件的路径
+            subHandle = _findfirst(subFilePath.c_str(),&subFileInfo);//子文件的句柄
             do
             {
 	            if(subFileInfo.attrib != _A_SUBDIR )//判断文件不是目录
@@ -321,9 +321,24 @@ void TheStarryLuncher::getLocalGameList()
                     string subFileName = subFileInfo.name;
                     if(subFileName.substr(subFileName.size() - 4) == ".jar")//判断是否为jar文件
                     {
-                        LocalGameObj* gameObj = new LocalGameObj(subFileName,VERSION_PATH + fileinfo.name + "\\"+ subFileName);
-                        ui.localGameList->addItem(subFileName.c_str());
-                        ui.test->append(gameObj->path.c_str());
+                        string verJsonPath;//版本的json文件的路径
+                        verJsonPath = VERSION_PATH + "\\" +
+	                        fileinfo.name + "\\" + subFileName.substr(0, subFileName.size() - 3) + "json";
+
+                        fstream fs;
+                        fs.open(verJsonPath,ios::in);//打开版本下的json文件
+                        if (!fs.is_open())
+                            continue;//结束本次循环
+
+                        stringstream temp;
+                        temp << fs.rdbuf();
+                        fs.close();//关闭文件，防止文件占用引发的游戏启动异常
+
+                        Json::Reader reader; Json::Value root;//json解析对象
+                        reader.parse(temp, root);//解析Json
+                        LocalGameObj* gameObj = new LocalGameObj(root["assetIndex"]["id"].as <string>(),subFileName,
+                            VERSION_PATH + fileinfo.name + "\\"+ subFileName);
+                        gameLocalList.push_back(gameObj);
                     }
 	            }
 
@@ -333,7 +348,6 @@ void TheStarryLuncher::getLocalGameList()
 
 
     } while (!_findnext(handle, &fileinfo));//遍历versions目录下得所有文件
-
     _findclose(handle);
 }
 
