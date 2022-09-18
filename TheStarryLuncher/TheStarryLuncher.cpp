@@ -1,5 +1,4 @@
 #include "TheStarryLuncher.h"
-#include "TheStarryLuncher.h"
 
 
 TheStarryLuncher::TheStarryLuncher(QWidget *parent)
@@ -95,6 +94,8 @@ void TheStarryLuncher::initWidget()
     ui.window_bar->installEventFilter(this);//窗口标题栏安装事件过滤器
     ui.close->raise();//防止关闭按钮被挡住
     ui.miniSize->raise();//防止最小化按钮被挡住
+    this->gamePath = _getcwd(NULL, NULL) + string("\\.minecraft");//获取游戏的路径
+    ui.test->append(gamePath.c_str());
     createGameFloderIfNExist(); 
 }
 
@@ -276,7 +277,7 @@ bool TheStarryLuncher::eventFilter(QObject* watched, QEvent* event)
 
 bool TheStarryLuncher::createGameFloderIfNExist()
 {
-    if(_access("./.minecraft",NULL) == -1)
+    if(_access("./.minecraft",NULL) == -1)//判断.minecraft文件夹是否存在
     {
         _mkdir("./.minecraft");
         return false;
@@ -299,8 +300,9 @@ void TheStarryLuncher::getLocalGameList()
 
     long handle;//version文件夹下的文件句柄
     struct _finddata_t fileinfo;
+    string versionsPath = gamePath + "\\versions\\";//versions文件夹的路径
     //第一次查找
-    handle = _findfirst((VERSION_PATH + "*").c_str(), &fileinfo);
+    handle = _findfirst((versionsPath + "*").c_str(), &fileinfo);
     if (handle == -1)//文件夹为空
         return;
 
@@ -312,7 +314,7 @@ void TheStarryLuncher::getLocalGameList()
         {
             long subHandle;//versions文件夹下的子目录的文件句柄
             struct _finddata_t subFileInfo;//子目录的文件的信息
-            string subFilePath = VERSION_PATH + fileinfo.name + "\\*" ;//子文件的路径
+            string subFilePath = versionsPath + fileinfo.name + "\\*" ;//子文件的路径
             subHandle = _findfirst(subFilePath.c_str(),&subFileInfo);//子文件的句柄
             do
             {
@@ -322,7 +324,7 @@ void TheStarryLuncher::getLocalGameList()
                     if(subFileName.substr(subFileName.size() - 4) == ".jar")//判断是否为jar文件
                     {
                         string verJsonPath;//版本的json文件的路径
-                        verJsonPath = VERSION_PATH + "\\" +
+                        verJsonPath = versionsPath + "\\" +
 	                        fileinfo.name + "\\" + subFileName.substr(0, subFileName.size() - 3) + "json";
 
                         fstream fs;
@@ -337,7 +339,7 @@ void TheStarryLuncher::getLocalGameList()
                         Json::Reader reader; Json::Value root;//json解析对象
                         reader.parse(temp, root);//解析Json
                         LocalGameObj* gameObj = new LocalGameObj(root["assetIndex"]["id"].as <string>(),subFileName,
-                            VERSION_PATH + fileinfo.name + "\\"+ subFileName);
+                            versionsPath + fileinfo.name + "\\"+ subFileName,"auto");//BUG
                         gameLocalList.push_back(gameObj);
                     }
 	            }
@@ -349,6 +351,26 @@ void TheStarryLuncher::getLocalGameList()
 
     } while (!_findnext(handle, &fileinfo));//遍历versions目录下得所有文件
     _findclose(handle);
+}
+
+void TheStarryLuncher::lunchGame(LunchConf *conf)
+{
+    LocalGameObj* temp;//临时的游戏对象指针
+    for(int i = 0;i < gameLocalList.size();i++)
+    {
+	    if(gameLocalList.at(i)->fileName == Utf8ToGbk(conf->fileName.toStdString().c_str()))//判断要启动的游戏版本
+	    {
+            temp = gameLocalList.at(i);
+            break;//找到游戏，退出循环
+	    }
+    }
+    string c_changProcessPath = "cd /d" + gamePath;
+    system(c_changProcessPath.c_str());//将路径切换到游戏目录下
+    stringstream c_lunch;
+    c_lunch << temp->javaSelectPath
+        << "-Dfile.encoding=GB18030"//编码
+        << "-Dminecraft.client.jar="<< "\"" << temp->path << "\"";
+		
 }
 
 

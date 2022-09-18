@@ -14,12 +14,13 @@
 #include <io.h>
 #include "LocalGameObj.h"
 #include "TsException.h"
+#include "LunchConf.h"
 #include "ui_TheStarryLuncher.h"
 
 
 using namespace std;
 const string GET_GAME_LIST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-const string VERSION_PATH = ".\\.minecraft\\versions\\";
+const string LUNCHER_VERSION = "ALAPH 0.3.0";//启动器的版本
 class TheStarryLuncher : public QWidget
 {
     Q_OBJECT
@@ -58,4 +59,7 @@ private:
     bool createGameFloderIfNExist();//TODO 判断游戏的目录(.minecraft),是否存在，不存在放回false并创建
     void getLocalGameList();//获取本地的游戏列表
     vector<LocalGameObj*>gameLocalList;//本地的游戏列表
+    void lunchGame(LunchConf* conf);//TODO 启动游戏
+    string gamePath;//游戏(.minecraft的路径)
+    
 };

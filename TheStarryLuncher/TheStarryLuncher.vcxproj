@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LocalGameObj.cpp" />
+    <ClCompile Include="LunchConf.cpp" />
     <ClCompile Include="TsException.cpp" />
     <QtRcc Include="TheStarryLuncher.qrc" />
     <QtUic Include="TheStarryLuncher.ui" />
@@ -105,6 +106,7 @@
   <ItemGroup>
     <ClInclude Include="Config.h" />
     <ClInclude Include="LocalGameObj.h" />
+    <ClInclude Include="LunchConf.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TsException.h" />
   </ItemGroup>

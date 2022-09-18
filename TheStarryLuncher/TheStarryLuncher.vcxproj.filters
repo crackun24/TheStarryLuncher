@@ -49,6 +49,9 @@
     <ClCompile Include="LocalGameObj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LunchConf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Config.h">
@@ -61,6 +64,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LocalGameObj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LunchConf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
